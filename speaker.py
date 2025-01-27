@@ -8,7 +8,7 @@ AUDIO_FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
 CHUNK = 1024
-VOLUME_MULTIPLIER = 1.5  # เพิ่มตัวคูณเสียงเพื่อให้เสียงดังขึ้น
+VOLUME_MULTIPLIER = 1.0  # เพิ่มตัวคูณเสียงเพื่อให้เสียงดังขึ้น
 
 def create_audio_stream():
     """Initialize and return a PyAudio stream for audio playback."""

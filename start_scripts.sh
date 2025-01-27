@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /home/torrobot/torrobot/venv/bin/activate
+source /home/torrobot/robotcontrol-pi5/venv/bin/activate
 
 
 
@@ -14,9 +14,9 @@ run_script() {
     done
 }
 
-run_script /home/torrobot/torrobot/sound.py &
-run_script /home/torrobot/torrobot/speaker.py &
-run_script /home/torrobot/torrobot/video.py &
-run_script /home/torrobot/torrobot/control.py &
+run_script /home/torrobot/robotcontrol-pi5/sound.py &
+run_script /home/torrobot/robotcontrol-pi5/speaker.py &
+run_script /home/torrobot/robotcontrol-pi5/video.py &
+run_script /home/torrobot/robotcontrol-pi5/control.py &
 
 wait 

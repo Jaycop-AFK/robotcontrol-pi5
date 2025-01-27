@@ -3,11 +3,11 @@ import time
 class MotorControl:
     def __init__(self):
         # Initialize motor pins as PWM devices
-        self.motor_back_left_forward = PWMOutputDevice(20)
-        self.motor_back_left_backward = PWMOutputDevice(21)
+        self.motor_back_left_forward = PWMOutputDevice(12)
+        self.motor_back_left_backward = PWMOutputDevice(13)
         
-        self.motor_back_right_forward = PWMOutputDevice(13)
-        self.motor_back_right_backward = PWMOutputDevice(12)
+        self.motor_back_right_forward = PWMOutputDevice(20)
+        self.motor_back_right_backward = PWMOutputDevice(21)
 
     def validate_speed(self, speed):
         # Constrain speed to the range 0-1 (since GPIOZero uses 0-1 for PWM)

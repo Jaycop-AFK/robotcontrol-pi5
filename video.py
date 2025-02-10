@@ -61,15 +61,15 @@ def capture_frames():
     global latest_frame
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     try:
         while True:
             ret, frame = cap.read()
             if not ret:
                 print("Failed to capture video frame.")
                 break
-            # Resize frame to 144p
-            resized_frame = cv2.resize(frame, (256, 144))
+            # Resize frame to 240p
+            resized_frame = cv2.resize(frame, (640, 240))
             _, jpeg = cv2.imencode('.jpg', resized_frame)
             latest_frame = jpeg.tobytes()
     finally:

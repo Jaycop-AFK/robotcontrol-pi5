@@ -187,282 +187,282 @@
         </div>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
-                // const SERVER_IP = "10.10.16.65";
-                // const SERVER_IP = "torrobot.asuscomm.com"
-                const SERVER_IP = "torrobot.asuscomm.com"
-                const VIDEO_PORT = 8001;
-                const AUDIO_PORT = 8002;
-                const CONTROL_PORT = 8003;
-                const SPEAK_PORT = 8004;
-
-                const controlSocket = new WebSocket(`ws://${SERVER_IP}:${CONTROL_PORT}`);
-                const joystick = document.getElementById("joystick");
-                const handle = document.getElementById("handle");
-
-                let intervalId = null;
-
-                let isDragging = false;
-
-                const joystickCenter = {
-                    x: joystick.offsetWidth / 2,
-                    y: joystick.offsetHeight / 2,
-                    maxDistance: joystick.offsetWidth / 2
-                };
-
-                const handleJoystickMove = (event) => {
-                    if (!isDragging) return;
-
-                    const rect = joystick.getBoundingClientRect();
-                    const x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left;
-                    const y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top;
-
-                    const dx = x - joystickCenter.x;
-                    const dy = y - joystickCenter.y;
-                    const distance = Math.min(joystickCenter.maxDistance, Math.sqrt(dx * dx + dy * dy));
-
-                    const angle = Math.atan2(dy, dx);
-                    const offsetX = distance * Math.cos(angle);
-                    const offsetY = distance * Math.sin(angle);
-
-                    handle.style.transform = `translate(${offsetX - handle.offsetWidth / 2}px, ${offsetY - handle.offsetHeight / 2}px)`;
-
-                    const normalizedX = Math.round(((offsetX / joystickCenter.maxDistance) + 1) * 127.5);
-                    const normalizedY = Math.round(((offsetY / joystickCenter.maxDistance) + 1) * 127.5);
-
-                    controlSocket.send(new Uint8Array([0x02, 0x00, normalizedX, normalizedY]));
-                };
-
-                const resetJoystick = () => {
-                    isDragging = false;
-                    handle.style.transform = "translate(-50%, -50%)";
-                    controlSocket.send(new Uint8Array([0x02, 0x00, 0x80, 0x80]));
-                };
-
-                const startSendingData = (command) => {
-                    intervalId = setInterval(() => {
-                        controlSocket.send(new Uint8Array([command]));
-                        console.log(`Sending command: ${command}`);
-                    }, 100); // Send every 100ms (adjustable)
-                };
-
-                const stopSendingData = () => {
-                    if (intervalId) {
-                        clearInterval(intervalId);
-                        intervalId = null;
-                        console.log("Stopped sending data");
-                    }
-                };
-
-                joystick.addEventListener("mousedown", () => (isDragging = true));
-                joystick.addEventListener("touchstart", () => (isDragging = true));
-                document.addEventListener("mousemove", handleJoystickMove);
-                document.addEventListener("touchmove", handleJoystickMove);
-                document.addEventListener("mouseup", resetJoystick);
-                document.addEventListener("touchend", resetJoystick);
-
-                const addButtonListeners = (buttonId, command) => {
-                    const button = document.getElementById(buttonId);
-                    // button.addEventListener("mousedown", () => controlSocket.send(new Uint8Array([command])));
-                    // button.addEventListener("mouseup", resetJoystick);
-                    // button.addEventListener("touchstart", (e) => {
-                    //     e.preventDefault();
-                    //     controlSocket.send(new Uint8Array([command]));
-                    //     if (buttonId === "up" || buttonId === "down") {
-                    //         console.log(`Button ${buttonId} pressed`);
-                    //     }
-                    // });
-                    // button.addEventListener("touchend", resetJoystick);
-
-
-                    button.addEventListener("mousedown", () => startSendingData(command));
-                    button.addEventListener("mouseup", stopSendingData);
-                    button.addEventListener("mouseleave", stopSendingData);
-
-                    // Touch events
-                    button.addEventListener("touchstart", (e) => {
-                        e.preventDefault();
-                        startSendingData(command);
-                    });
-                    button.addEventListener("touchend", (e) => {
-                        e.preventDefault();
-                        stopSendingData();
-                    });
-                };
-
-                addButtonListeners("up", 0x06);
-                addButtonListeners("down", 0x07);
-                addButtonListeners("left", 0x08);
-                addButtonListeners("right", 0x09);
-
-                document.getElementById("increase-speed").addEventListener("click", () => {
-                    controlSocket.send(new Uint8Array([0x04]));
-                });
-                document.getElementById("decrease-speed").addEventListener("click", () => {
-                    controlSocket.send(new Uint8Array([0x05]));
-                });
-
-                let audioContext = null;
-                let audioQueue = [];
-                let audioPlaying = false;
-
-                function playAudioBuffer() {
-                    if (audioQueue.length === 0 || audioPlaying) return;
-
-                    const chunk = audioQueue.shift();
-                    const audioBlob = new Blob([chunk], { type: "audio/wav" });
-
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        audioContext.decodeAudioData(reader.result, (buffer) => {
-                            const source = audioContext.createBufferSource();
-                            source.buffer = buffer;
-                            source.connect(audioContext.destination);
-                            source.onended = () => {
-                                audioPlaying = false;
-                                playAudioBuffer();
-                            };
-                            audioPlaying = true;
-                            source.start();
-                        });
-                    };
-                    reader.readAsArrayBuffer(audioBlob);
+              // กำหนดค่า IP และพอร์ตสำหรับการเชื่อมต่อ
+              // const SERVER_IP = "10.10.15.44";
+              const SERVER_IP = "torrobot.asuscomm.com"
+              const VIDEO_PORT = 8001;
+              const AUDIO_PORT = 8002;
+              const CONTROL_PORT = 8003;
+              const SPEAK_PORT = 8004;
+        
+              // เชื่อมต่อ control socket (สำหรับส่งข้อมูลจอยสติ๊ก)
+              const controlSocket = new WebSocket(`ws://${SERVER_IP}:${CONTROL_PORT}`);
+              const joystick = document.getElementById("joystick");
+              const handle = document.getElementById("handle");
+        
+              let intervalId = null;
+              let isDragging = false;
+        
+              const joystickCenter = {
+                x: joystick.offsetWidth / 2,
+                y: joystick.offsetHeight / 2,
+                maxDistance: joystick.offsetWidth / 2
+              };
+        
+              const handleJoystickMove = (event) => {
+                if (!isDragging) return;
+        
+                const rect = joystick.getBoundingClientRect();
+                const x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left;
+                const y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top;
+        
+                const dx = x - joystickCenter.x;
+                const dy = y - joystickCenter.y;
+                const distance = Math.min(joystickCenter.maxDistance, Math.sqrt(dx * dx + dy * dy));
+        
+                const angle = Math.atan2(dy, dx);
+                const offsetX = distance * Math.cos(angle);
+                const offsetY = distance * Math.sin(angle);
+        
+                handle.style.transform = `translate(${offsetX - handle.offsetWidth / 2}px, ${offsetY - handle.offsetHeight / 2}px)`;
+        
+                const normalizedX = Math.round(((offsetX / joystickCenter.maxDistance) + 1) * 127.5);
+                const normalizedY = Math.round(((offsetY / joystickCenter.maxDistance) + 1) * 127.5);
+        
+                controlSocket.send(new Uint8Array([0x02, 0x00, normalizedX, normalizedY]));
+              };
+        
+              const resetJoystick = () => {
+                isDragging = false;
+                handle.style.transform = "translate(-50%, -50%)";
+                controlSocket.send(new Uint8Array([0x02, 0x00, 0x80, 0x80]));
+              };
+        
+              const startSendingData = (command) => {
+                intervalId = setInterval(() => {
+                  controlSocket.send(new Uint8Array([command]));
+                  console.log(`Sending command: ${command}`);
+                }, 100); // ส่งทุก 100ms (ปรับได้ตามต้องการ)
+              };
+        
+              const stopSendingData = () => {
+                if (intervalId) {
+                  clearInterval(intervalId);
+                  intervalId = null;
+                  console.log("Stopped sending data");
                 }
-
-                document.getElementById("fullscreen-btn").addEventListener("click", () => {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen();
-                    } else {
-                        document.exitFullscreen();
-                    }
-                    if (!audioContext) {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-                        const audioSocket = new WebSocket(`ws://${SERVER_IP}:${AUDIO_PORT}`);
-                        audioSocket.binaryType = "arraybuffer";
-
-                        audioSocket.onmessage = (event) => {
-                            const chunk = new Uint8Array(event.data);
-                            audioQueue.push(chunk);
-                            if (!audioPlaying) playAudioBuffer();
-                        };
-                    }
+              };
+        
+              joystick.addEventListener("mousedown", () => (isDragging = true));
+              joystick.addEventListener("touchstart", () => (isDragging = true));
+              document.addEventListener("mousemove", handleJoystickMove);
+              document.addEventListener("touchmove", handleJoystickMove);
+              document.addEventListener("mouseup", resetJoystick);
+              document.addEventListener("touchend", resetJoystick);
+        
+              const addButtonListeners = (buttonId, command) => {
+                const button = document.getElementById(buttonId);
+                button.addEventListener("mousedown", () => startSendingData(command));
+                button.addEventListener("mouseup", stopSendingData);
+                button.addEventListener("mouseleave", stopSendingData);
+        
+                // สำหรับ touch events
+                button.addEventListener("touchstart", (e) => {
+                  e.preventDefault();
+                  startSendingData(command);
                 });
-
-                const videoElement = document.getElementById("video-stream");
-                const videoSocket = new WebSocket(`ws://${SERVER_IP}:${VIDEO_PORT}`);
-                videoSocket.binaryType = "arraybuffer";
-
-                videoSocket.onmessage = (event) => {
-                    const blob = new Blob([event.data], { type: "image/jpeg" });
-                    videoElement.src = URL.createObjectURL(blob);
+                button.addEventListener("touchend", (e) => {
+                  e.preventDefault();
+                  stopSendingData();
+                });
+              };
+        
+              addButtonListeners("up", 0x06);
+              addButtonListeners("down", 0x07);
+              addButtonListeners("left", 0x08);
+              addButtonListeners("right", 0x09);
+        
+              document.getElementById("increase-speed").addEventListener("click", () => {
+                controlSocket.send(new Uint8Array([0x04]));
+              });
+              document.getElementById("decrease-speed").addEventListener("click", () => {
+                controlSocket.send(new Uint8Array([0x05]));
+              });
+        
+              let audioContext = null;
+              let audioQueue = [];
+              let audioPlaying = false;
+        
+              function playAudioBuffer() {
+                if (audioQueue.length === 0 || audioPlaying) return;
+        
+                const chunk = audioQueue.shift();
+                const audioBlob = new Blob([chunk], { type: "audio/wav" });
+        
+                const reader = new FileReader();
+                reader.onload = () => {
+                  audioContext.decodeAudioData(reader.result, (buffer) => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(audioContext.destination);
+                    source.onended = () => {
+                      audioPlaying = false;
+                      playAudioBuffer();
+                    };
+                    audioPlaying = true;
+                    source.start();
+                  });
                 };
-
-                let mediaStream = null;
-                let micContext = null;
-                let audioInput = null;
-                let processor = null;
-                let audioChunks = [];
-
-                const startRecording = async () => {
+                reader.readAsArrayBuffer(audioBlob);
+              }
+        
+              document.getElementById("fullscreen-btn").addEventListener("click", () => {
+                if (!document.fullscreenElement) {
+                  document.documentElement.requestFullscreen();
+                } else {
+                  document.exitFullscreen();
+                }
+                if (!audioContext) {
+                  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+                  const audioSocket = new WebSocket(`ws://${SERVER_IP}:${AUDIO_PORT}`);
+                  audioSocket.binaryType = "arraybuffer";
+        
+                  audioSocket.onmessage = (event) => {
+                    const chunk = new Uint8Array(event.data);
+                    audioQueue.push(chunk);
+                    if (!audioPlaying) playAudioBuffer();
+                  };
+                }
+              });
+        
+              const videoElement = document.getElementById("video-stream");
+              const videoSocket = new WebSocket(`ws://${SERVER_IP}:${VIDEO_PORT}`);
+              videoSocket.binaryType = "arraybuffer";
+        
+              videoSocket.onmessage = (event) => {
+                const blob = new Blob([event.data], { type: "image/jpeg" });
+                videoElement.src = URL.createObjectURL(blob);
+              };
+        
+              // ส่วนของการบันทึกเสียงจากไมโครโฟน
+              let mediaStream = null;
+              let micContext = null;
+              let audioInput = null;
+              let processor = null;
+              let audioChunks = [];
+        
+              const startRecording = async () => {
+                try {
+                  mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                  micContext = new (window.AudioContext || window.webkitAudioContext)();
+                  audioInput = micContext.createMediaStreamSource(mediaStream);
+        
+                  const bufferSize = 4096;
+                  processor = micContext.createScriptProcessor(bufferSize, 1, 1);
+        
+                  processor.onaudioprocess = (event) => {
+                    const inputData = event.inputBuffer.getChannelData(0);
+                    const int16Array = new Int16Array(inputData.length);
+                    for (let i = 0; i < inputData.length; i++) {
+                      int16Array[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7FFF;
+                    }
+                    audioChunks.push(int16Array); // เก็บข้อมูลเสียงใน buffer
+                  };
+        
+                  audioInput.connect(processor);
+                  processor.connect(micContext.destination);
+        
+                  console.log("Recording started...");
+                } catch (error) {
+                  console.error("Error starting recording:", error);
+                }
+              };
+        
+              // เปลี่ยนจากการส่งผ่าน WebSocket เป็นการส่งผ่าน HTTP POST
+              const stopRecordingAndSend = async () => {
+                if (processor) {
+                  processor.disconnect();
+                  processor = null;
+                }
+                if (audioInput) {
+                  audioInput.disconnect();
+                  audioInput = null;
+                }
+                if (micContext) {
+                  micContext.close();
+                  micContext = null;
+                }
+                if (mediaStream) {
+                  mediaStream.getTracks().forEach(track => track.stop());
+                  mediaStream = null;
+                }
+        
+                if (audioChunks.length > 0) {
+                  const blob = new Blob(
+                    audioChunks.map(chunk => new Int16Array(chunk).buffer),
+                    { type: "audio/wav" }
+                  );
+        
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const audioData = reader.result;
                     try {
-                        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        micContext = new (window.AudioContext || window.webkitAudioContext)();
-                        audioInput = micContext.createMediaStreamSource(mediaStream);
-
-                        const bufferSize = 4096;
-                        processor = micContext.createScriptProcessor(bufferSize, 1, 1);
-
-                        processor.onaudioprocess = (event) => {
-                            const inputData = event.inputBuffer.getChannelData(0);
-                            const int16Array = new Int16Array(inputData.length);
-                            for (let i = 0; i < inputData.length; i++) {
-                                int16Array[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7FFF;
-                            }
-                            audioChunks.push(int16Array); // เก็บข้อมูลเสียงใน buffer
-                        };
-
-                        audioInput.connect(processor);
-                        processor.connect(micContext.destination);
-
-                        console.log("Recording started...");
+                      const response = await fetch(`http://${SERVER_IP}:${SPEAK_PORT}/audio`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/octet-stream"
+                        },
+                        body: audioData
+                      });
+                      const result = await response.json();
+                      console.log("Audio data sent successfully.", result);
                     } catch (error) {
-                        console.error("Error starting recording:", error);
+                      console.error("Error sending audio data:", error);
                     }
-                };
-
-                const stopRecordingAndSend = async () => {
-                    if (processor) {
-                        processor.disconnect();
-                        processor = null;
-                    }
-                    if (audioInput) {
-                        audioInput.disconnect();
-                        audioInput = null;
-                    }
-                    if (micContext) {
-                        micContext.close();
-                        micContext = null;
-                    }
-                    if (mediaStream) {
-                        mediaStream.getTracks().forEach(track => track.stop());
-                        mediaStream = null;
-                    }
-
-                    if (audioChunks.length > 0) {
-                        const blob = new Blob(audioChunks.map(chunk => new Int16Array(chunk).buffer), {
-                            type: "audio/wav",
-                        });
-
-                        const reader = new FileReader();
-                        reader.onload = async () => {
-                            const audioData = reader.result;
-
-                            // ส่งไปยัง WebSocket ของ sound.py
-                            const micSocket = new WebSocket(`ws://${SERVER_IP}:${SPEAK_PORT}`);
-                            micSocket.onopen = () => {
-                                micSocket.send(audioData);
-                                micSocket.close();
-                                console.log("Audio data sent successfully.");
-                            };
-                        };
-                        reader.readAsArrayBuffer(blob);
-                    }
-                    audioChunks = []; // ล้าง buffer หลังส่งเสียง
-                };
-
-                const micButtonElement = document.getElementById('mic');
-                const recordingStatus = document.getElementById('recording-status');
-
-
-                const showRecordingStatus = () => { recordingStatus.style.display = 'block'; };
-                const hideRecordingStatus = () => { recordingStatus.style.display = 'none'; };
-                micButtonElement.addEventListener('mousedown', () => {
-                    showRecordingStatus();
-                    startRecording();
-                });
-                micButtonElement.addEventListener('mouseup', () => {
-                    hideRecordingStatus();
-                    stopRecordingAndSend();
-                });
-                micButtonElement.addEventListener('mouseleave', () => {
-                    hideRecordingStatus();
-                    stopRecordingAndSend();
-                });
-                micButtonElement.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    showRecordingStatus();
-                    startRecording();
-                });
-                micButtonElement.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    hideRecordingStatus();
-                    stopRecordingAndSend();
-                });
-
-                window.addEventListener('beforeunload', stopAudioProcessing);
-
+                  };
+                  reader.readAsArrayBuffer(blob);
+                }
+                audioChunks = []; // ล้าง buffer หลังส่งเสียง
+              };
+        
+              const micButtonElement = document.getElementById('mic');
+              const recordingStatus = document.getElementById('recording-status');
+        
+              const showRecordingStatus = () => {
+                recordingStatus.style.display = 'block';
+              };
+              const hideRecordingStatus = () => {
+                recordingStatus.style.display = 'none';
+              };
+        
+              micButtonElement.addEventListener('mousedown', () => {
+                showRecordingStatus();
+                startRecording();
+              });
+              micButtonElement.addEventListener('mouseup', () => {
+                hideRecordingStatus();
+                stopRecordingAndSend();
+              });
+              micButtonElement.addEventListener('mouseleave', () => {
+                hideRecordingStatus();
+                stopRecordingAndSend();
+              });
+              micButtonElement.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                showRecordingStatus();
+                startRecording();
+              });
+              micButtonElement.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                hideRecordingStatus();
+                stopRecordingAndSend();
+              });
+        
+              // หากต้องการหยุดกระบวนการใด ๆ เมื่อออกจากหน้าเว็บ (สามารถปรับหรือเอาออกได้)
+              // window.addEventListener('beforeunload', () => { /* ปิดการเชื่อมต่อหรือหยุดการประมวลผล */ });
             });
-        </script>
+          </script>
     </body>
 
     </html>

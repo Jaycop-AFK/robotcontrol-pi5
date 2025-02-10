@@ -1,4 +1,4 @@
-import asyncio 
+import asyncio
 import websockets
 import pyaudio
 import wave
@@ -13,24 +13,13 @@ CHUNK = 4096
 def create_audio_input_stream():
     """Initialize and return a PyAudio stream for audio input."""
     audio = pyaudio.PyAudio()
-    try:
-        stream = audio.open(
-            format=AUDIO_FORMAT,
-            channels=CHANNELS,
-            rate=RATE,
-            input=True,
-            input_device_index=2,
-            frames_per_buffer=CHUNK
-        )
-    except:
-          stream = audio.open(
-            format=AUDIO_FORMAT,
-            channels=CHANNELS,
-            rate=RATE,
-            input=True,
-            input_device_index=3,
-            frames_per_buffer=CHUNK
-        )
+    stream = audio.open(
+        format=AUDIO_FORMAT,
+        channels=CHANNELS,
+        rate=RATE,
+        input=True,
+        frames_per_buffer=CHUNK
+    )
     return audio, stream
 
 def encode_audio_to_wav(raw_audio):
